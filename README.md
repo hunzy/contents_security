@@ -28,6 +28,7 @@ ipython -i classification.py
 ## 必要なライブラリ
 
 * numpy
+* scipy
 * tweepy
 * scikit-learn
 * pandas

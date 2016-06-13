@@ -7,7 +7,6 @@
 
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt 
 from sklearn import datasets
 from sklearn import cluster
 from sklearn import svm
@@ -27,7 +26,7 @@ df5_uec = pd.read_csv('csv/characters_uec.csv')
 
 uec = pd.merge(df1_uec, df2_uec, on='name')
 uec = pd.merge(uec, df3_uec, on='name')
-uec = pd.merge(uec, df4_uec, on='name')c
+uec = pd.merge(uec, df4_uec, on='name')
 uec = pd.merge(uec, df5_uec, on='name')
 
 df1_notuec = pd.read_csv('csv/repRT_notuec.csv')
@@ -53,16 +52,20 @@ target = np.hstack((is_uec, is_notuec))
 # # 訓練データとテストデータに分ける
 data_train, data_test, target_train, target_test = CV.train_test_split(data, target)
 
+# clf = neighbors.KNeighborsClassifier()
 # clf = tree.DecisionTreeClassifier()
 # clf = svm.LinearSVC()
-# clf = NB.GaussianNB()
-clf = neighbors.KNeighborsClassifier()
+clf = NB.GaussianNB()
 clf.fit(data_train, target_train)
 target_predict = clf.predict(data_test)
 
+print('--- Confusion Matrix ---')
 print( metrics.confusion_matrix(target_test, target_predict) )
+
+print('--- Accuracy ---')
 print( metrics.accuracy_score(target_test, target_predict) ) # 正解率
 
+print('--- Cross-Validation Score ---')
 scores = CV.cross_val_score(clf, data, target, cv=5)
 print( scores )         # クロスバリデーションの配列
 print( scores.mean() )  # クロスバリデーションの平均
