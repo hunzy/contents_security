@@ -2,3 +2,6 @@ csv/
 
 .python-version
 config.py
+
+*.pkl
+*.npy
