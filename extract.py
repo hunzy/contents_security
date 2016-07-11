@@ -19,6 +19,7 @@
     出力：['アカウント名', '平均文字数', '絵文字の数', '特徴語の数']
 '''
 
+import codecs
 import os
 import re
 import sys
@@ -33,6 +34,9 @@ class extractFeatures(object):
         全ての特徴量を返す
     '''
     def get(self, tweetFilePath):
+        with codecs.open(tweetFilePath, 'r', 'utf-8') as tweetFile:
+            self.tweetLines = tweetFile.readlines()
+
         cvec = self.calcCharacterVec(tweetFilePath)
         rvec = self.calcReplyRTVec(tweetFilePath)
         wvec = self.calcWeekdayVec(tweetFilePath)
@@ -40,7 +44,7 @@ class extractFeatures(object):
 
         featureVector = cvec[1:]+rvec[1:]+wvec[1:]+tvec[1:]
         featureName   = ['textMean', 'emoticon', 'featureWord', 'replay', 'retweet',
-                         'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 
+                         'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun',
                          '0-3', '3-6', '6-9', '9-12', '12-15', '15-18', '18-21', '21-24']
 
         return [featureVector, featureName]
@@ -49,14 +53,13 @@ class extractFeatures(object):
         リプライ，リツイート数
     '''
     def calcReplyRTVec(self, tweetFilePath):
-        with open(tweetFilePath, 'r') as tweetFile:
+        with codecs.open(tweetFilePath, 'r', 'utf-8') as tweetFile:
             accountName = os.path.basename(tweetFilePath)   # ファイルの名前をパスから切り出してアカウント名とする
 
             repRT_Count = [0] * 3 # アカウント名，リプライ数，リツイート数
             repRT_Count[0] = accountName
 
-            tweetLines = tweetFile.readlines()  # ツイートデータを1行ずつ読み込んだリストの生成
-            for tweet in tweetLines:
+            for tweet in self.tweetLines:
                 if ",@" in tweet:
                     #print tweet.decode('utf-8')
                     repRT_Count[1] += 1
@@ -70,13 +73,12 @@ class extractFeatures(object):
         時間帯
     '''
     def calcTimeZoneVec(self, tweetFilePath):
-        with open(tweetFilePath, 'r') as tweetFile:
+        with codecs.open(tweetFilePath, 'r', 'utf-8') as tweetFile:
             fileName = os.path.basename(tweetFilePath)   # ファイルの名前をパスから切り出し
             timeZoneCount = [0] * 9 # アカウント名＋時間帯ごとのツイート数（0で初期化された要素数9のリスト）
             timeZoneCount[0] = fileName
 
-            tweetLines = tweetFile.readlines()  # ツイートデータを1行ずつ読み込んだリストの生成
-            for tweet in tweetLines:
+            for tweet in self.tweetLines:
                 tweetTime = re.split(r'[\s,:]', tweet)   # 空白，カンマ，コロンで切り分け
                 try:
                     tweetTimeHH = tweetTime[1]  # ツイートした時刻HH
@@ -92,7 +94,7 @@ class extractFeatures(object):
         曜日
     '''
     def calcWeekdayVec(self, tweetFilePath):
-        with open(tweetFilePath, 'r') as tweetFile:
+        with codecs.open(tweetFilePath, 'r', 'utf-8') as tweetFile:
             fileName = os.path.basename(tweetFilePath)   # ファイルの名前をパスから切り出し
 
             weekdayCount = [0] * 8 # アカウント名＋曜日ごとのツイート数（0で初期化された要素数8のリスト）
@@ -120,7 +122,7 @@ class extractFeatures(object):
                         'ゲーム','バイト','アニメ','先生','オタク','電通大',
                         '電気通信大学','ライブ','学生','授業','レポート','実験','漫画'] # 本当は形態素解析が必要
 
-        with open(tweetFilePath, 'r') as tweetFile:
+        with codecs.open(tweetFilePath, 'r', 'utf-8') as tweetFile:
             fileName = os.path.basename(tweetFilePath)   # ファイルの名前をパスから切り出し
 
             characterCount = [0] * 4 # アカウント名＋平均文字数＋絵文字の数＋特徴語の数
@@ -130,7 +132,9 @@ class extractFeatures(object):
             total_emoticon = 0
             total_feature_words = 0
 
-            for tweet in tweetFile.readlines():
+            tweetList = tweetFile.readlines()
+            for tweet in tweetList:
+                #print(tweet)
                 try:
                     text = tweet.rstrip().split(',')[1]
                     text = rep_link.sub('', text)
@@ -146,5 +150,3 @@ class extractFeatures(object):
 
             characterCount = [fileName, total_chars//total_lines, total_emoticon, total_feature_words]
         return characterCount
-
-
