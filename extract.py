@@ -41,11 +41,13 @@ class extractFeatures(object):
         rvec = self.calcReplyRTVec(tweetFilePath)
         wvec = self.calcWeekdayVec(tweetFilePath)
         tvec = self.calcTimeZoneVec(tweetFilePath)
+        fvec = self.calcFFVec(tweetFilePath)
 
-        featureVector = cvec[1:]+rvec[1:]+wvec[1:]+tvec[1:]
+        featureVector = cvec[1:]+rvec[1:]+wvec[1:]+tvec[1:]+fvec[1:]
         featureName   = ['textMean', 'emoticon', 'featureWord', 'replay', 'retweet',
                          'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun',
-                         '0-3', '3-6', '6-9', '9-12', '12-15', '15-18', '18-21', '21-24']
+                         '0-3', '3-6', '6-9', '9-12', '12-15', '15-18', '18-21', '21-24',
+                         'follow_art', 'follow_phys', 'follow_ofc']
 
         return [featureVector, featureName]
 
@@ -144,3 +146,39 @@ class extractFeatures(object):
 
         characterCount = [fileName, total_chars//total_lines, total_emoticon, total_feature_words]
         return characterCount
+
+
+    """
+        フォロー・フォロワー
+    """
+    def calcFFVec(self, tweetFilePath):
+        import art_followers
+        import phisi_followers
+        import official_followers
+
+        accountName = os.path.basename(tweetFilePath)   # ファイルの名前をパスから切り出してアカウント名とする
+        ffVec = [0] * 4
+
+        artFollowerList = art_followers.accounts    # 文化系サークルアカウントのフォロワー
+        physFollowerList = phisi_followers.accounts # 体育系サークルアカウントのフォロワー
+        ofcFollowerList = official_followers.accounts   # 公式アカウントのフォロワー
+
+        artCount = artFollowerList.count(accountName)
+        physCount = physFollowerList.count(accountName)
+        ofcCount = ofcFollowerList.count(accountName)
+
+        ffVec = [ accountName, artCount, physCount, ofcCount]
+        return ffVec
+
+
+if __name__ == "__main__":
+    """
+        テスト
+    """
+    tweetFilePath = sys.argv[1]
+    ext = extractFeatures()
+
+    features, names = ext.get(tweetFilePath)
+
+    print(features)
+    print(names)
