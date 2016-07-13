@@ -5,6 +5,7 @@
 5分割交差検証による評価を行う
 """
 
+import pickle
 import pandas as pd
 import numpy as np
 from sklearn import svm
@@ -44,3 +45,12 @@ print( scores.mean() )  # クロスバリデーションの平均
 
 # 分類器の保存
 joblib.dump(clf, 'clf.pkl')
+
+# 電通生の平均と非電通生の平均を保存
+uec    = df[df['flag'] == 1].ix[:,1:-1]
+notuec = df[df['flag'] == 0].ix[:,1:-1]
+
+uec_mean = uec.mean().as_matrix()
+notuec_mean = notuec.mean().as_matrix()
+
+np.savez('means.npz', uec=uec_mean, notuec=notuec_mean)
